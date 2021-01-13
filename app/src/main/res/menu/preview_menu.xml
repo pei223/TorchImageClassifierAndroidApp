@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu"
+        android:icon="@drawable/hamburger_icon"
+        android:title="@string/menu"
+        app:showAsAction="ifRoom">
+
+        <menu>
+            <item
+                android:id="@+id/camera_capture"
+                android:title="@string/camera_capture_menu"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/frame_capture"
+                android:title="@string/frame_capture_menu"
+                app:showAsAction="never" />
+        </menu>
+    </item>
+</menu>

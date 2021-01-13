@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">DeepLearningSample</string>
+    <string name="camera_disabled">Camera is disabled.</string>
+    <string name="camera_capture_menu">Camera capture</string>
+    <string name="frame_capture_menu">Frame capture</string>
+    <string name="capture_button_text">Capture</string>
+    <string name="menu">menu</string>
+</resources>
