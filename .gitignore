@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/assets/abn_model_android.pt
+/.idea/encodings.xml
+/app/src/main/assets/mobilenet_model_android.pt
+/.idea/runConfigurations.xml

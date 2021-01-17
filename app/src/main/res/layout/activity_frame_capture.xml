@@ -15,7 +15,7 @@
         android:minHeight="?android:actionBarSize"
         android:popupTheme="@android:style/Theme.Material"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:title="@string/camera_capture_menu"
+        app:title="@string/frame_capture_menu"
         app:titleTextColor="@color/white" />
 
     <LinearLayout
@@ -51,15 +51,13 @@
                 android:textSize="18sp"
                 android:visibility="gone" />
 
-            <Button
-                android:id="@+id/button_capture"
+            <TextView
+                android:id="@+id/inference_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
-                android:layout_marginEnd="@dimen/edge_button_margin"
-                android:layout_marginBottom="@dimen/edge_button_margin"
-                android:background="@drawable/capture_button_style"
-                android:text="@string/capture_button_text"
+                android:background="@drawable/info_view_style"
+                android:padding="10dp"
                 android:textColor="@color/white" />
         </FrameLayout>
     </LinearLayout>

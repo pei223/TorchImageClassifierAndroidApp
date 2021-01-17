@@ -1,13 +1,19 @@
 package com.example.deeplearningsample.view
 
 import android.content.Context
-import android.graphics.ImageFormat
+import android.graphics.*
 import android.hardware.Camera
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import com.example.deeplearningsample.device.CameraHandlerThread
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+
+
+interface FrameCallback {
+    fun onPreviewFrame(data: ByteArray?)
+}
 
 
 class CameraPreview(
@@ -16,6 +22,7 @@ class CameraPreview(
     private val mCameraHandlerThread: CameraHandlerThread
 ) : SurfaceView(context), SurfaceHolder.Callback, Camera.PreviewCallback {
     private val TAG = "[CameraPreview]"
+    private var mFrameCallback: FrameCallback? = null
 
     private val mHolder: SurfaceHolder = holder.apply {
         // Install a SurfaceHolder.Callback so we get notified when the
@@ -79,7 +86,7 @@ class CameraPreview(
     }
 
     override fun onPreviewFrame(data: ByteArray?, camera: Camera?) {
-        Log.w(TAG, "onPreviewFrame")
+        mFrameCallback?.onPreviewFrame(data)
     }
 
     fun takePicture(callback: Camera.PictureCallback) {
@@ -94,5 +101,22 @@ class CameraPreview(
 
     fun startCameraPreview() {
         mCameraHandlerThread.startPreview(mCamera)
+    }
+
+    fun setFrameCallback(frameCallback: FrameCallback) {
+        mFrameCallback = frameCallback
+    }
+
+    fun convertJpegBitmapFromYUV(yuvData: ByteArray): Bitmap {
+        val width = mCamera.parameters.previewSize.width
+        val height = mCamera.parameters.previewSize.height
+
+        val yuvimage = YuvImage(yuvData, ImageFormat.NV21, width, height, null)
+        val baos = ByteArrayOutputStream()
+        yuvimage.compressToJpeg(Rect(0, 0, width, height), 80, baos)
+        val jpegData: ByteArray = baos.toByteArray()
+        val bitmapFactoryOptions = BitmapFactory.Options()
+        bitmapFactoryOptions.inPreferredConfig = Bitmap.Config.RGB_565
+        return BitmapFactory.decodeByteArray(jpegData, 0, jpegData.size, bitmapFactoryOptions)
     }
 }

@@ -1,10 +1,8 @@
 package com.example.deeplearningsample.view
 
 import android.content.Intent
-import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.example.deeplearningsample.R
@@ -22,7 +20,7 @@ abstract class BasePreviewActivity : AppCompatActivity() {
                 startActivity(Intent(this, CameraCaptureActivity::class.java))
             }
             R.id.frame_capture -> {
-                startActivity(Intent(this, CameraCaptureActivity::class.java))
+                startActivity(Intent(this, FrameCaptureActivity::class.java))
             }
         }
         return super.onOptionsItemSelected(item)
