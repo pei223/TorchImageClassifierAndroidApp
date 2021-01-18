@@ -37,20 +37,48 @@ abstract class BaseImageClassifier(
     }
 
     protected fun bitmapToTensor(imageBitmap: Bitmap): Tensor {
-        val resizedImageBitmap = Bitmap.createScaledBitmap(imageBitmap, mWidth, mHeight, false)
+        val resizedImageBitmap = Bitmap.createScaledBitmap(imageBitmap, mWidth, mHeight, true)
         return TensorImageUtils.bitmapToFloat32Tensor(
             resizedImageBitmap,
             TensorImageUtils.TORCHVISION_NORM_MEAN_RGB, TensorImageUtils.TORCHVISION_NORM_STD_RGB
         )
     }
 
-    abstract fun classify(imageBitmap: Bitmap): STL10Class
+    fun centerCropBitmap(bitmap: Bitmap): Bitmap {
+        if (bitmap.width == bitmap.height) {
+            return bitmap
+        }
+        if (bitmap.width > bitmap.height) {
+            val leftOffset = (bitmap.width - bitmap.height) / 2
+            return Bitmap.createBitmap(
+                bitmap,
+                leftOffset,
+                0,
+                bitmap.height,
+                bitmap.height,
+                null,
+                true
+            )
+        }
+        val topOffset = (bitmap.height - bitmap.width) / 2
+        return Bitmap.createBitmap(
+            bitmap,
+            0,
+            topOffset,
+            bitmap.width,
+            bitmap.width,
+            null,
+            true
+        )
+    }
+
+    abstract fun classify(imageBitmap: Bitmap): Int
 }
 
 
 class SimpleImageClassifier(context: Context, width: Int, height: Int, modelName: String) :
     BaseImageClassifier(context, width, height, modelName) {
-    override fun classify(imageBitmap: Bitmap): STL10Class {
+    override fun classify(imageBitmap: Bitmap): Int {
         val inputTensor: Tensor = this.bitmapToTensor(imageBitmap)
 
         val resultIValue = mModule.forward(IValue.from(inputTensor))
@@ -66,13 +94,13 @@ class SimpleImageClassifier(context: Context, width: Int, height: Int, modelName
                 maxScoreIdx = i
             }
         }
-        return indexOf(maxScoreIdx)
+        return maxScoreIdx
     }
 }
 
 class ABNImageClassifier(context: Context, width: Int, height: Int, modelName: String) :
     BaseImageClassifier(context, width, height, modelName) {
-    override fun classify(imageBitmap: Bitmap): STL10Class {
+    override fun classify(imageBitmap: Bitmap): Int {
         val inputTensor: Tensor = this.bitmapToTensor(imageBitmap)
 
         val resultIValue = mModule.forward(IValue.from(inputTensor))
@@ -88,6 +116,6 @@ class ABNImageClassifier(context: Context, width: Int, height: Int, modelName: S
                 maxScoreIdx = i
             }
         }
-        return indexOf(maxScoreIdx)
+        return maxScoreIdx
     }
 }

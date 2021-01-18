@@ -23,6 +23,8 @@ class CameraPreview(
 ) : SurfaceView(context), SurfaceHolder.Callback, Camera.PreviewCallback {
     private val TAG = "[CameraPreview]"
     private var mFrameCallback: FrameCallback? = null
+    private var mRotation = 0
+    private var mCameraReleased = false
 
     private val mHolder: SurfaceHolder = holder.apply {
         // Install a SurfaceHolder.Callback so we get notified when the
@@ -44,8 +46,9 @@ class CameraPreview(
         }
     }
 
-    private fun setupCameraPreview() {
-        mCamera.setDisplayOrientation(90)
+    private fun setupCameraPreview(orientation: Int = 90) {
+        mRotation = orientation
+        mCamera.setDisplayOrientation(orientation)
         val parameters = mCamera.parameters
         parameters.previewFrameRate = 30
         mCamera.setPreviewCallback(this)
@@ -97,6 +100,7 @@ class CameraPreview(
         mCamera.stopPreview()
         mCamera.setPreviewCallback(null)
         mCamera.release()
+        mCameraReleased = true
     }
 
     fun startCameraPreview() {
@@ -113,10 +117,34 @@ class CameraPreview(
 
         val yuvimage = YuvImage(yuvData, ImageFormat.NV21, width, height, null)
         val baos = ByteArrayOutputStream()
-        yuvimage.compressToJpeg(Rect(0, 0, width, height), 80, baos)
+        yuvimage.compressToJpeg(
+            Rect(0, 0, width, height),
+            100,
+            baos
+        )
         val jpegData: ByteArray = baos.toByteArray()
         val bitmapFactoryOptions = BitmapFactory.Options()
         bitmapFactoryOptions.inPreferredConfig = Bitmap.Config.RGB_565
-        return BitmapFactory.decodeByteArray(jpegData, 0, jpegData.size, bitmapFactoryOptions)
+        val resultBitmap =
+            BitmapFactory.decodeByteArray(jpegData, 0, jpegData.size, bitmapFactoryOptions)
+        return fixBitmapRotation(resultBitmap)
+    }
+
+    fun fixBitmapRotation(bitmap: Bitmap): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(mRotation.toFloat())
+        return Bitmap.createBitmap(
+            bitmap,
+            0,
+            0,
+            bitmap.width,
+            bitmap.height,
+            matrix,
+            true
+        )
+    }
+
+    fun isCameraReleased(): Boolean {
+        return mCameraReleased
     }
 }

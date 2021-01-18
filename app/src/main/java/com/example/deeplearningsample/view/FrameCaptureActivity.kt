@@ -18,10 +18,7 @@ import com.example.deeplearningsample.R
 import com.example.deeplearningsample.device.CameraDeviceUtil
 import com.example.deeplearningsample.device.CameraHandlerThread
 import com.example.deeplearningsample.device.OnCameraObtainedListener
-import com.example.deeplearningsample.model.ABNImageClassifier
-import com.example.deeplearningsample.model.BaseImageClassifier
-import com.example.deeplearningsample.model.SimpleImageClassifier
-import com.example.deeplearningsample.model.STL10Class
+import com.example.deeplearningsample.model.*
 
 
 class FrameCaptureActivity : BasePreviewActivity() {
@@ -47,11 +44,17 @@ class FrameCaptureActivity : BasePreviewActivity() {
                 Log.w(TAG, "Frame is empty.")
                 return
             }
+            if (mPreview!!.isCameraReleased()) {
+                Log.w(TAG, "Camera is already released.")
+                return
+            }
             mPreview?.let { it ->
                 mBusy = true
                 val start: Double = System.currentTimeMillis().toDouble()
-                val imageBitmap: Bitmap = it.convertJpegBitmapFromYUV(yuvData)
-                val resultClass: STL10Class = mClassifier.classify(imageBitmap)
+                val imageBitmap: Bitmap =
+                    mClassifier.centerCropBitmap(it.convertJpegBitmapFromYUV(yuvData))
+                val resultClassIdx: Int = mClassifier.classify(imageBitmap)
+                val resultClass = indexOf(resultClassIdx)
                 mClassifier.classify(imageBitmap)
                 mBusy = false
                 mUIHandler.post(Runnable {
@@ -65,8 +68,8 @@ class FrameCaptureActivity : BasePreviewActivity() {
         super.onCreate(savedInstanceState)
         mUIHandler = Handler(this.mainLooper)
         setContentView(R.layout.activity_frame_capture)
+        mClassifier = ABNImageClassifier(this, 96, 96, "abn_model_android.pt")
 //        mClassifier = SimpleImageClassifier(this, 256, 256, "mobilenet_model_android.pt")
-        mClassifier = ABNImageClassifier(this, 96, (96 * 1.5).toInt(), "abn_model_android.pt")
     }
 
     override fun onResume() {

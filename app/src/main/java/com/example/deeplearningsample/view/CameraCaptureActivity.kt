@@ -20,9 +20,7 @@ import com.example.deeplearningsample.R
 import com.example.deeplearningsample.device.CameraDeviceUtil
 import com.example.deeplearningsample.device.CameraHandlerThread
 import com.example.deeplearningsample.device.OnCameraObtainedListener
-import com.example.deeplearningsample.model.BaseImageClassifier
-import com.example.deeplearningsample.model.SimpleImageClassifier
-import com.example.deeplearningsample.model.STL10Class
+import com.example.deeplearningsample.model.*
 
 
 class CameraCaptureActivity : BasePreviewActivity() {
@@ -36,8 +34,20 @@ class CameraCaptureActivity : BasePreviewActivity() {
 
 
     private val mOnPictureTaken = Camera.PictureCallback { data: ByteArray, _ ->
-        val imageBitmap: Bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
-        val resultClass: STL10Class = mClassifier.classify(imageBitmap)
+        if (mPreview == null) {
+            Log.e(TAG, "Preview is null on picturecallback.")
+            return@PictureCallback
+        }
+        if (mPreview!!.isCameraReleased()) {
+            Log.w(TAG, "Camera is already released.")
+            return@PictureCallback
+        }
+        var imageBitmap: Bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
+        imageBitmap = mPreview!!.fixBitmapRotation(imageBitmap)
+        imageBitmap = mClassifier.centerCropBitmap(imageBitmap)
+
+        val resultClassIdx: Int = mClassifier.classify(imageBitmap)
+        val resultClass = indexOf(resultClassIdx)
         mUIHandler.postDelayed(Runnable {
             showResult(resultClass)
             mBusy = false
@@ -49,7 +59,8 @@ class CameraCaptureActivity : BasePreviewActivity() {
         super.onCreate(savedInstanceState)
         mUIHandler = Handler(this.mainLooper)
         setContentView(R.layout.activity_camera_capture)
-        mClassifier = SimpleImageClassifier(this, 256, 256, "mobilenet_model_android.pt")
+        mClassifier = ABNImageClassifier(this, 96, 96, "abn_model_android.pt")
+//        mClassifier = SimpleImageClassifier(this, 256, 256, "mobilenet_model_android.pt")
     }
 
     override fun onResume() {
